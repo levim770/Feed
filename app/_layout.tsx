@@ -1,37 +1,56 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { BLACK } from '@/constants/colors';
+import { dispatchSelectedReset } from '@/store/selectedPost';
+import { store } from '@/store/store';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, useNavigation, useRouter } from 'expo-router';
+import { TouchableOpacity } from 'react-native';
+import { Provider } from 'react-redux';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+//todo: extract screenOptions
+function RootLayout() {
+  const router = useRouter();
+  // const dispatch = useDispatch();
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
+  function handleGoBack() {
+    // dispatchSelectedReset(dispatch);
+    router.back();
   }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <Provider store={store}>
+      <Stack
+        screenOptions={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: '#ffffff',
+          },
+          headerTitleStyle: {
+            fontSize: 24,
+            fontWeight: '600',
+            color: BLACK,
+          },
+          headerBackTitleVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity onPress={handleGoBack} style={{ marginLeft: 10 }}>
+              <Ionicons name="arrow-back" size={24} color="black" />
+            </TouchableOpacity>
+          ),
+        }}>
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'Feed App',
+            headerLeft: undefined,
+          }}
+        />
+        <Stack.Screen
+          name="[postId]"
+          options={{
+            title: 'Full Post',
+          }}
+        />
       </Stack>
-    </ThemeProvider>
+    </Provider>
   );
 }
+
+export default RootLayout;
